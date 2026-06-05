@@ -559,20 +559,40 @@ export default function App() {
                             const txDate = new Date(tx.date);
                             const isToday = txDate.toLocaleDateString() === today;
 
-                            // Lógica robusta para extraer nombre y referencia
+                            // Lógica mejorada y definitiva para extraer nombre y referencia
                             let nombreDedicado = tx.name || tx.nombre || tx.assessorName || tx.customerName || tx.payerName || tx.user || tx.cliente;
                             let nombreReal = nombreDedicado || 'Sin Nombre';
-                            let refCorta = tx.ref ? tx.ref.slice(-4) : '0000';
+                            let refCorta = tx.ref ? String(tx.ref).slice(-4) : '0000';
 
-                            if (tx.ref && tx.ref.includes('****')) {
-                              const partes = tx.ref.split('****');
-                              const extraido = partes[0].replace(/-/g, '').trim();
-                              
-                              // Solo usamos el nombre extraído de la referencia si no venía un nombre en campo separado
-                              if (extraido && !nombreDedicado) {
-                                nombreReal = extraido;
+                            if (tx.ref && typeof tx.ref === 'string') {
+                              // Buscar el separador explícito configurado en Make " - ****"
+                              if (tx.ref.includes(' - ****')) {
+                                const partes = tx.ref.split(' - ****');
+                                let extraido = partes[0].trim();
+                                
+                                // Eliminar la basura de BBVA ("Tipo de llave...")
+                                if (extraido.includes('Tipo de llave')) {
+                                  extraido = extraido.split('Tipo de llave')[0].trim();
+                                }
+                                
+                                if (extraido && !nombreDedicado) {
+                                  nombreReal = extraido;
+                                }
+                                refCorta = partes[1] ? partes[1].trim() : '0000';
+                              } else if (tx.ref.includes('****')) {
+                                // Soporte para formato antiguo si existe
+                                const partes = tx.ref.split('****');
+                                refCorta = partes[partes.length - 1].trim();
+                                
+                                let extraido = partes[0].replace(/-/g, '').trim();
+                                if (extraido.includes('Tipo de llave')) {
+                                  extraido = extraido.split('Tipo de llave')[0].trim();
+                                }
+                                
+                                if (extraido && !nombreDedicado) {
+                                  nombreReal = extraido;
+                                }
                               }
-                              refCorta = partes[1] ? partes[1].trim() : '0000';
                             }
 
                             return (
