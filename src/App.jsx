@@ -559,8 +559,21 @@ export default function App() {
                             const txDate = new Date(tx.date);
                             const isToday = txDate.toLocaleDateString() === today;
 
-                            // Corrección: Función agresiva para capturar el nombre independientemente de la clave
-                            const nombreReal = tx.name || tx.nombre || tx.assessorName || tx.customerName || tx.payerName || tx.user || tx.cliente || 'Sin Nombre';
+                            // Lógica robusta para extraer nombre y referencia
+                            let nombreDedicado = tx.name || tx.nombre || tx.assessorName || tx.customerName || tx.payerName || tx.user || tx.cliente;
+                            let nombreReal = nombreDedicado || 'Sin Nombre';
+                            let refCorta = tx.ref ? tx.ref.slice(-4) : '0000';
+
+                            if (tx.ref && tx.ref.includes('****')) {
+                              const partes = tx.ref.split('****');
+                              const extraido = partes[0].replace(/-/g, '').trim();
+                              
+                              // Solo usamos el nombre extraído de la referencia si no venía un nombre en campo separado
+                              if (extraido && !nombreDedicado) {
+                                nombreReal = extraido;
+                              }
+                              refCorta = partes[1] ? partes[1].trim() : '0000';
+                            }
 
                             return (
                               <tr key={tx.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/20 transition-colors">
@@ -583,7 +596,7 @@ export default function App() {
                                       {nombreReal}
                                     </span>
                                     <span className="text-xs text-slate-400 font-mono">
-                                      ****{tx.ref ? tx.ref.slice(-4) : '0000'}
+                                      ****{refCorta}
                                     </span>
                                   </div>
                                 </td>
