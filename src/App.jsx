@@ -31,7 +31,6 @@ import {
 const FIREBASE_URL = "https://lineas-impares-2026-default-rtdb.firebaseio.com/pagos.json";
 
 export default function App() {
-  // Inicializamos la autenticación desde el localStorage para que no se cierre sola
   const [isAuthenticated, setIsAuthenticated] = useState(() => localStorage.getItem('isAuthenticated') === 'true');
   const [isAdmin, setIsAdmin] = useState(() => localStorage.getItem('isAdmin') === 'true');
   
@@ -226,7 +225,6 @@ export default function App() {
 
   const today = new Date().toLocaleDateString();
   
-  // Calcular la fecha límite (hace 3 días) para el perfil de asesor
   const threeDaysAgo = new Date();
   threeDaysAgo.setHours(0, 0, 0, 0);
   threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
@@ -235,7 +233,7 @@ export default function App() {
     .filter(t => {
       if (!isAdmin) {
         const txDate = new Date(t.date);
-        // Retornamos true si la fecha de la transacción es mayor o igual a hace 3 días
+        if (isNaN(txDate.getTime())) return true;
         return txDate >= threeDaysAgo; 
       }
       return true; 
@@ -569,19 +567,16 @@ export default function App() {
                             const txDate = new Date(tx.date);
                             const isToday = txDate.toLocaleDateString() === today;
 
-                            // LÓGICA DE LIMPIEZA INFALIBLE PARA CUALQUIER CAMPO
                             let textoBruto = tx.name || tx.nombre || tx.assessorName || tx.customerName || tx.payerName || tx.user || tx.cliente || tx.ref || '';
                             let nombreLimpio = 'Sin Nombre';
                             let refCorta = tx.ref ? String(tx.ref).slice(-4) : '0000';
 
                             if (textoBruto) {
-                              // Primero, si contiene " - ****" (formato Make)
                               if (textoBruto.includes(' - ****')) {
                                 const partes = textoBruto.split(' - ****');
                                 nombreLimpio = partes[0].trim();
                                 refCorta = partes[1] ? partes[1].trim() : refCorta;
                               } 
-                              // O si solo tiene "****"
                               else if (textoBruto.includes('****')) {
                                 const partes = textoBruto.split('****');
                                 nombreLimpio = partes[0].replace(/-/g, '').trim();
@@ -590,13 +585,11 @@ export default function App() {
                                 nombreLimpio = textoBruto.trim();
                               }
 
-                              // Limpieza final de la basura de BBVA (Tipo de llave)
                               if (nombreLimpio.includes('Tipo de llave')) {
                                 nombreLimpio = nombreLimpio.split('Tipo de llave')[0].trim();
                               }
                             }
                             
-                            // Asegurar que refCorta no se muestre como un string largo por error
                             if (refCorta.length > 4) {
                                 refCorta = refCorta.slice(-4);
                             }
@@ -616,12 +609,13 @@ export default function App() {
                                     {tx.bank ? tx.bank.trim() : 'Desconocido'}
                                   </span>
                                 </td>
-                                <td className="px-6 py-5 text-base text-slate-600 dark:text-slate-400 font-mono font-medium truncate max-w-[200px]">
+                                <td className="px-6 py-5 truncate max-w-[200px]">
                                   <div className="flex flex-col">
-                                    <span className="font-bold text-slate-800 dark:text-slate-200">
+                                    {/* Cambio de fuente tipográfica a font-sans, y peso a font-semibold para un look más limpio */}
+                                    <span className="font-sans font-semibold text-slate-800 dark:text-slate-200 tracking-wide text-[15px]">
                                       {nombreLimpio}
                                     </span>
-                                    <span className="text-xs text-slate-400 font-mono">
+                                    <span className="text-xs text-slate-400 font-mono mt-0.5">
                                       ****{refCorta}
                                     </span>
                                   </div>
