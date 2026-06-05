@@ -572,7 +572,7 @@ export default function App() {
                                 <td className="px-6 py-5 text-base text-slate-600 dark:text-slate-400 font-mono font-medium truncate max-w-[200px]">
                                   <div className="flex flex-col">
                                     <span className="font-bold text-slate-800 dark:text-slate-200">
-                                      {tx.name || tx.nombre || tx.assessorName || 'Sin Nombre'}
+                                      {tx.name || tx.nombre || tx.assessorName || tx.customerName || tx.payerName || 'Sin Nombre'}
                                     </span>
                                     <span className="text-xs text-slate-400 font-mono">
                                       ****{tx.ref ? tx.ref.slice(-4) : '0000'}
