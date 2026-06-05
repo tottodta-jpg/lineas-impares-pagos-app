@@ -42,8 +42,7 @@ export default function App() {
 
   const [isDarkMode, setIsDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
-      const savedTheme = localStorage.getItem('theme_modo');
-      return savedTheme === 'dark';
+      return localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
     }
     return false;
   });
@@ -97,7 +96,13 @@ export default function App() {
   }, [isAuthenticated]);
 
   useEffect(() => {
-    localStorage.setItem('theme_modo', isDarkMode ? 'dark' : 'light');
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.theme = 'dark';
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.theme = 'light';
+    }
   }, [isDarkMode]);
 
   const parseAmount = (val) => {
@@ -554,6 +559,9 @@ export default function App() {
                             const txDate = new Date(tx.date);
                             const isToday = txDate.toLocaleDateString() === today;
 
+                            // Corrección: Función agresiva para capturar el nombre independientemente de la clave
+                            const nombreReal = tx.name || tx.nombre || tx.assessorName || tx.customerName || tx.payerName || tx.user || tx.cliente || 'Sin Nombre';
+
                             return (
                               <tr key={tx.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/20 transition-colors">
                                 <td className="px-6 py-5">
@@ -572,7 +580,7 @@ export default function App() {
                                 <td className="px-6 py-5 text-base text-slate-600 dark:text-slate-400 font-mono font-medium truncate max-w-[200px]">
                                   <div className="flex flex-col">
                                     <span className="font-bold text-slate-800 dark:text-slate-200">
-                                      {tx.name || tx.nombre || tx.assessorName || tx.customerName || tx.payerName || 'Sin Nombre'}
+                                      {nombreReal}
                                     </span>
                                     <span className="text-xs text-slate-400 font-mono">
                                       ****{tx.ref ? tx.ref.slice(-4) : '0000'}
