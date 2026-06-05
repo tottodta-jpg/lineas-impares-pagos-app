@@ -31,7 +31,10 @@ import {
 const FIREBASE_URL = "https://lineas-impares-2026-default-rtdb.firebaseio.com/pagos.json";
 
 export default function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // Inicializamos la autenticación desde el localStorage para que no se cierre sola
+  const [isAuthenticated, setIsAuthenticated] = useState(() => localStorage.getItem('isAuthenticated') === 'true');
+  const [isAdmin, setIsAdmin] = useState(() => localStorage.getItem('isAdmin') === 'true');
+  
   const [globalUsername, setGlobalUsername] = useState('');
   const [globalPassword, setGlobalPassword] = useState('');
   const [globalError, setGlobalError] = useState('');
@@ -42,7 +45,7 @@ export default function App() {
 
   const [isDarkMode, setIsDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      return localStorage.getItem('theme_modo') === 'dark';
     }
     return false;
   });
@@ -51,7 +54,6 @@ export default function App() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('detalle');
 
-  const [isAdmin, setIsAdmin] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [passwordInput, setPasswordInput] = useState('');
   const [loginError, setLoginError] = useState('');
@@ -96,13 +98,7 @@ export default function App() {
   }, [isAuthenticated]);
 
   useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-      localStorage.theme = 'dark';
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.theme = 'light';
-    }
+    localStorage.setItem('theme_modo', isDarkMode ? 'dark' : 'light');
   }, [isDarkMode]);
 
   const parseAmount = (val) => {
@@ -119,10 +115,14 @@ export default function App() {
     if (user === 'admin' && pass === 'admin123') {
       setIsAuthenticated(true);
       setIsAdmin(true);
+      localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('isAdmin', 'true');
       setGlobalError('');
     } else if (user === 'asesor' && pass === 'asesor123') {
       setIsAuthenticated(true);
       setIsAdmin(false);
+      localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('isAdmin', 'false');
       setGlobalError('');
     } else {
       setGlobalError('Usuario o contraseña incorrectos');
@@ -134,6 +134,8 @@ export default function App() {
     setIsAdmin(false);
     setGlobalUsername('');
     setGlobalPassword('');
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('isAdmin');
   };
 
   const getStats = (period) => {
@@ -208,6 +210,7 @@ export default function App() {
     e.preventDefault();
     if (passwordInput === 'admin123') {
       setIsAdmin(true);
+      localStorage.setItem('isAdmin', 'true');
       setShowLoginModal(false);
       setPasswordInput('');
       setLoginError('');
@@ -218,15 +221,22 @@ export default function App() {
   
   const handleAdminLogout = () => {
     setIsAdmin(false);
+    localStorage.setItem('isAdmin', 'false');
   };
 
   const today = new Date().toLocaleDateString();
+  
+  // Calcular la fecha límite (hace 3 días) para el perfil de asesor
+  const threeDaysAgo = new Date();
+  threeDaysAgo.setHours(0, 0, 0, 0);
+  threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
 
   const filteredTransactions = transactions
     .filter(t => {
       if (!isAdmin) {
-        const txDate = new Date(t.date).toLocaleDateString();
-        return txDate === today; 
+        const txDate = new Date(t.date);
+        // Retornamos true si la fecha de la transacción es mayor o igual a hace 3 días
+        return txDate >= threeDaysAgo; 
       }
       return true; 
     })
