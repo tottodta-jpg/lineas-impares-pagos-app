@@ -569,16 +569,16 @@ export default function App() {
                                     {tx.bank ? tx.bank.trim() : 'Desconocido'}
                                   </span>
                                 </td>
-                                <td className="px-6 py-5 text-base text-slate-600 dark:text-slate-400 font-mono font-medium truncate max-w-[200px]">
-                                  <div className="flex flex-col">
-                                    <span className="font-bold text-slate-800 dark:text-slate-200">
-                                      {tx.assessorName || 'Sin Nombre'}
-                                    </span>
-                                    <span className="text-xs text-slate-400">
-                                      ****{tx.ref ? tx.ref.slice(-4) : '0000'}
-                                    </span>
-                                  </div>
-                                </td>
+                               <td className="px-6 py-5 text-base text-slate-600 dark:text-slate-400 font-mono font-medium truncate max-w-[200px]">
+                                  <div className="flex flex-col">
+                                    <span className="font-bold text-slate-800 dark:text-slate-200">
+                                      {tx.name || tx.assessorName || 'Sin Nombre'}
+                                    </span>
+                                    <span className="text-xs text-slate-400">
+                                      ****{tx.ref ? tx.ref.slice(-4) : '0000'}
+                                    </span>
+                                  </div>
+                                </td>
                                 <td className="px-6 py-5">
                                   <div className="flex items-center gap-2 text-base font-semibold text-slate-700 dark:text-slate-300">
                                     <CircleDot size={16} className="text-green-500 fill-green-500" />
