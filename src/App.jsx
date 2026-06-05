@@ -559,40 +559,36 @@ export default function App() {
                             const txDate = new Date(tx.date);
                             const isToday = txDate.toLocaleDateString() === today;
 
-                            // Lógica mejorada y definitiva para extraer nombre y referencia
-                            let nombreDedicado = tx.name || tx.nombre || tx.assessorName || tx.customerName || tx.payerName || tx.user || tx.cliente;
-                            let nombreReal = nombreDedicado || 'Sin Nombre';
+                            // LÓGICA DE LIMPIEZA INFALIBLE PARA CUALQUIER CAMPO
+                            let textoBruto = tx.name || tx.nombre || tx.assessorName || tx.customerName || tx.payerName || tx.user || tx.cliente || tx.ref || '';
+                            let nombreLimpio = 'Sin Nombre';
                             let refCorta = tx.ref ? String(tx.ref).slice(-4) : '0000';
 
-                            if (tx.ref && typeof tx.ref === 'string') {
-                              // Buscar el separador explícito configurado en Make " - ****"
-                              if (tx.ref.includes(' - ****')) {
-                                const partes = tx.ref.split(' - ****');
-                                let extraido = partes[0].trim();
-                                
-                                // Eliminar la basura de BBVA ("Tipo de llave...")
-                                if (extraido.includes('Tipo de llave')) {
-                                  extraido = extraido.split('Tipo de llave')[0].trim();
-                                }
-                                
-                                if (extraido && !nombreDedicado) {
-                                  nombreReal = extraido;
-                                }
-                                refCorta = partes[1] ? partes[1].trim() : '0000';
-                              } else if (tx.ref.includes('****')) {
-                                // Soporte para formato antiguo si existe
-                                const partes = tx.ref.split('****');
-                                refCorta = partes[partes.length - 1].trim();
-                                
-                                let extraido = partes[0].replace(/-/g, '').trim();
-                                if (extraido.includes('Tipo de llave')) {
-                                  extraido = extraido.split('Tipo de llave')[0].trim();
-                                }
-                                
-                                if (extraido && !nombreDedicado) {
-                                  nombreReal = extraido;
-                                }
+                            if (textoBruto) {
+                              // Primero, si contiene " - ****" (formato Make)
+                              if (textoBruto.includes(' - ****')) {
+                                const partes = textoBruto.split(' - ****');
+                                nombreLimpio = partes[0].trim();
+                                refCorta = partes[1] ? partes[1].trim() : refCorta;
+                              } 
+                              // O si solo tiene "****"
+                              else if (textoBruto.includes('****')) {
+                                const partes = textoBruto.split('****');
+                                nombreLimpio = partes[0].replace(/-/g, '').trim();
+                                refCorta = partes[1] ? partes[1].trim() : refCorta;
+                              } else {
+                                nombreLimpio = textoBruto.trim();
                               }
+
+                              // Limpieza final de la basura de BBVA (Tipo de llave)
+                              if (nombreLimpio.includes('Tipo de llave')) {
+                                nombreLimpio = nombreLimpio.split('Tipo de llave')[0].trim();
+                              }
+                            }
+                            
+                            // Asegurar que refCorta no se muestre como un string largo por error
+                            if (refCorta.length > 4) {
+                                refCorta = refCorta.slice(-4);
                             }
 
                             return (
@@ -613,7 +609,7 @@ export default function App() {
                                 <td className="px-6 py-5 text-base text-slate-600 dark:text-slate-400 font-mono font-medium truncate max-w-[200px]">
                                   <div className="flex flex-col">
                                     <span className="font-bold text-slate-800 dark:text-slate-200">
-                                      {nombreReal}
+                                      {nombreLimpio}
                                     </span>
                                     <span className="text-xs text-slate-400 font-mono">
                                       ****{refCorta}
