@@ -97,7 +97,18 @@ export default function App() {
   }, [isAuthenticated]);
 
   useEffect(() => {
+    // Guardamos la preferencia
     localStorage.setItem('theme_modo', isDarkMode ? 'dark' : 'light');
+    
+    // Limpieza agresiva del DOM: Fuerza al navegador a quitar la clase oscura
+    // tanto de la etiqueta <html> como del <body> para destrabar el color blanco.
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+      document.body.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      document.body.classList.remove('dark');
+    }
   }, [isDarkMode]);
 
   const parseAmount = (val) => {
