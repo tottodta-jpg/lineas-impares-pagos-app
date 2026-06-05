@@ -98,11 +98,6 @@ export default function App() {
 
   useEffect(() => {
     localStorage.setItem('theme_modo', isDarkMode ? 'dark' : 'light');
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
   }, [isDarkMode]);
 
   const parseAmount = (val) => {
